@@ -1,4 +1,3 @@
-import { Text } from '@mantine/core';
 import { STATUS_HEX, type TaskStatus } from '../domain/transitions';
 
 const STEPS: { key: TaskStatus; label: string }[] = [
@@ -35,11 +34,6 @@ export function Lifecycle({ status }: { status: TaskStatus }) {
           );
         })}
       </div>
-      {muted && (
-        <Text size="sm" c="dimmed" mt={6}>
-          Задача отменена и больше не изменяется
-        </Text>
-      )}
     </div>
   );
 }

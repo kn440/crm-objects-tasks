@@ -9,6 +9,7 @@ import { showError, showSuccess } from '../lib/errors';
 import type { ObjectRow, TaskListItem } from '../lib/types';
 import { DataState } from '../components/DataState';
 import { ObjectFormModal } from '../components/ObjectFormModal';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 import { TaskFormModal } from '../components/TaskFormModal';
 import { TaskList } from '../components/TaskList';
 import { StatusRail } from '../components/StatusRail';
@@ -20,6 +21,7 @@ export function ObjectPage() {
   const navigate = useNavigate();
   const [editing, setEditing] = useState(false);
   const [creatingTask, setCreatingTask] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const { data, error, loading, reload } = useLoad(async () => {
     const [obj, tasks] = await Promise.all([
@@ -41,9 +43,12 @@ export function ObjectPage() {
   const object = data?.object;
 
   const remove = async () => {
-    if (!object || !window.confirm(`Удалить объект «${object.name}»?`)) return;
+    if (!object) return;
     const { error } = await supabase.from('objects').delete().eq('id', object.id);
-    if (error) return showError(error);
+    if (error) {
+      setDeleting(false);
+      return showError(error);
+    }
     showSuccess('Объект удалён');
     navigate('/objects');
   };
@@ -81,7 +86,7 @@ export function ObjectPage() {
                       color="red"
                       leftSection={<IconTrash size={16} />}
                       disabled={data.tasks.length > 0}
-                      onClick={remove}
+                      onClick={() => setDeleting(true)}
                     >
                       {data.tasks.length > 0 ? 'Удалить можно только пустой объект' : 'Удалить объект'}
                     </Menu.Item>
@@ -115,6 +120,15 @@ export function ObjectPage() {
             <TaskList tasks={data.tasks} showAssignee={me.role === 'manager'} />
           )}
 
+          <ConfirmDialog
+            opened={deleting}
+            onClose={() => setDeleting(false)}
+            title="Удалить объект?"
+            confirmLabel="Удалить"
+            onConfirm={remove}
+          >
+            Объект «{object.name}» будет удалён без возможности восстановления.
+          </ConfirmDialog>
           <ObjectFormModal opened={editing} onClose={() => setEditing(false)} object={object} onSaved={() => reload()} />
           <TaskFormModal
             opened={creatingTask}

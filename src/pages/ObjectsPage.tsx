@@ -26,19 +26,13 @@ export function ObjectsPage() {
     return data as ObjectWithTasks[];
   }, []);
 
-  const toReview = (data ?? []).reduce((n, o) => n + o.tasks.filter((t) => t.status === 'review').length, 0);
-
   return (
     <Stack gap="lg">
       <Group justify="space-between" align="flex-end">
         <div>
           <Title order={1}>Объекты</Title>
           <Text c="dimmed" size="sm" mt={4}>
-            {me.role === 'manager'
-              ? toReview > 0
-                ? `Ждут вашей проверки: ${toReview}`
-                : 'Все стройки компании'
-              : 'Стройки, где у вас есть задачи'}
+            {me.role === 'manager' ? 'Все стройки компании' : 'Стройки, где у вас есть задачи'}
           </Text>
         </div>
         {me.role === 'manager' && (

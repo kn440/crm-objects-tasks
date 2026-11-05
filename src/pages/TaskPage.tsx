@@ -14,6 +14,7 @@ import {
 } from '@mantine/core';
 import {
   IconArrowBackUp,
+  IconBan,
   IconBuildingSkyscraper,
   IconCalendar,
   IconDots,
@@ -37,6 +38,7 @@ import { TaskActions } from '../components/TaskActions';
 import { TaskFormModal } from '../components/TaskFormModal';
 import { ReassignModal } from '../components/ReassignModal';
 import { Lifecycle } from '../components/Lifecycle';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 import {
   STATUS_COLOR,
   STATUS_LABEL,
@@ -71,8 +73,8 @@ const HINT: Record<TaskStatus, Record<Role, string>> = {
     manager: 'Работа принята. Если позже обнаружится брак, задачу можно вернуть на доработку.',
   },
   cancelled: {
-    executor: 'Задача отменена.',
-    manager: 'Задача отменена.',
+    executor: 'Задача отменена и больше не изменяется.',
+    manager: 'Задача отменена и больше не изменяется.',
   },
 };
 
@@ -82,6 +84,7 @@ export function TaskPage() {
   const navigate = useNavigate();
   const [editing, setEditing] = useState(false);
   const [reassigning, setReassigning] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const { data, error, loading, reload } = useLoad(async () => {
     const [task, history] = await Promise.all([
@@ -114,11 +117,15 @@ export function TaskPage() {
   const everStarted = history.some((h) => h.to_status === 'in_progress');
   const reworkCount = history.filter((h) => h.to_status === 'rework').length;
   const lastReturn = [...history].reverse().find((h) => h.to_status === 'rework');
+  const cancellation = [...history].reverse().find((h) => h.to_status === 'cancelled');
 
   const remove = async () => {
-    if (!task || !window.confirm(`Удалить задачу «${task.title}»?`)) return;
+    if (!task) return;
     const { error } = await supabase.from('tasks').delete().eq('id', task.id);
-    if (error) return showError(error);
+    if (error) {
+      setDeleting(false);
+      return showError(error);
+    }
     showSuccess('Задача удалена');
     navigate(task.object ? `/objects/${task.object.id}` : '/objects');
   };
@@ -175,14 +182,16 @@ export function TaskPage() {
                             </Menu.Item>
                             <Menu.Divider />
                             {canDeleteTask(task, me, everStarted) ? (
-                              <Menu.Item color="red" leftSection={<IconTrash size={16} />} onClick={remove}>
+                              <Menu.Item color="red" leftSection={<IconTrash size={16} />} onClick={() => setDeleting(true)}>
                                 Удалить задачу
                               </Menu.Item>
                             ) : (
                               <Menu.Item leftSection={<IconTrash size={16} />} disabled>
                                 <Text size="sm">Удалить нельзя</Text>
                                 <Text size="xs" c="dimmed">
-                                  Только новую задачу, которую не брали в работу. Используйте отмену.
+                                  {everStarted
+                                    ? 'По задаче уже велась работа, её история сохраняется. Используйте отмену.'
+                                    : 'Удалить можно только новую задачу. Используйте отмену.'}
                                 </Text>
                               </Menu.Item>
                             )}
@@ -198,6 +207,15 @@ export function TaskPage() {
                         <Text size="sm" style={{ whiteSpace: 'pre-wrap' }}>{lastReturn.comment}</Text>
                         <Text size="xs" c="dimmed" mt={4}>
                           {lastReturn.actor?.full_name}, {formatDate(lastReturn.created_at)}
+                        </Text>
+                      </Alert>
+                    )}
+
+                    {task.status === 'cancelled' && cancellation?.comment && (
+                      <Alert color="gray" variant="light" icon={<IconBan size={18} />} title="Причина отмены">
+                        <Text size="sm" style={{ whiteSpace: 'pre-wrap' }}>{cancellation.comment}</Text>
+                        <Text size="xs" c="dimmed" mt={4}>
+                          {cancellation.actor?.full_name}, {formatDate(cancellation.created_at)}
                         </Text>
                       </Alert>
                     )}
@@ -266,6 +284,15 @@ export function TaskPage() {
             </Grid.Col>
           </Grid>
 
+          <ConfirmDialog
+            opened={deleting}
+            onClose={() => setDeleting(false)}
+            title="Удалить задачу?"
+            confirmLabel="Удалить"
+            onConfirm={remove}
+          >
+            Задача «{task.title}» будет удалена без возможности восстановления.
+          </ConfirmDialog>
           <TaskFormModal
             opened={editing}
             onClose={() => setEditing(false)}
