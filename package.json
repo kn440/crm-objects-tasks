@@ -1,0 +1,35 @@
+{
+  "name": "crm-objects",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -b",
+    "security-check": "tsx scripts/security-check.ts"
+  },
+  "dependencies": {
+    "@mantine/core": "^7.15.2",
+    "@mantine/hooks": "^7.15.2",
+    "@mantine/notifications": "^7.15.2",
+    "@supabase/supabase-js": "^2.47.10",
+    "@tabler/icons-react": "^3.24.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router-dom": "^6.28.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "@vitejs/plugin-react": "^4.3.4",
+    "dotenv": "^16.4.7",
+    "postcss": "^8.4.49",
+    "postcss-preset-mantine": "^1.17.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vite": "^5.4.11"
+  }
+}
