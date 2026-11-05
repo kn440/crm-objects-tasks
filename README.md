@@ -4,6 +4,9 @@
 
 **Стек:** React 18 + TypeScript (Vite), Mantine, Supabase (Postgres, Auth, RLS).
 
+Работающее приложение: https://crm-objects-tasks-gamma.vercel.app (адаптировано под телефон).
+Что и как проверено — [docs/TESTING.md](docs/TESTING.md).
+
 ## Тестовые доступы
 
 | Роль | Имя в приложении | Email | Пароль |
@@ -24,7 +27,7 @@ supabase/
     20261105200200_rls.sql        политики Row Level Security
   seed.sql                        роли и тестовые данные
   tests/
-    security_check.sql            44 попытки обхода защиты прямо в SQL
+    security_check.sql            44 проверки защиты прямо в SQL
     local_supabase_stub.sql       заглушка Supabase для проверки на чистом Postgres
 scripts/security-check.ts         те же атаки через настоящий API Supabase
 src/
@@ -33,6 +36,7 @@ src/
 docs/
   DECISIONS.md                    решения и допущения
   EXPLANATION.md                  объяснение для руководителя
+  TESTING.md                      что и как проверено
 ```
 
 ## Запуск
